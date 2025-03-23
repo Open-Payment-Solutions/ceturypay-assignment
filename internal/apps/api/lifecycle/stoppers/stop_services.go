@@ -1,15 +1,19 @@
 package stoppers
 
 import (
-	"centurypay/internal/di"
-	"centurypay/internal/services"
 	"context"
+
+	"centurypay/internal/di"
+	"centurypay/internal/interfaces"
 )
 
 func StopServices(_ctx context.Context, di di.Container) {
-	accountsService := di.MustGet("accountsService").(*services.AccountsService)
+	transactionsProcessor := di.MustGet("transactionsProcessor").(interfaces.TransactionProcessor)
+	_ = transactionsProcessor.Stop()
+
+	accountsService := di.MustGet("accountsService").(interfaces.AccountsService)
 	_ = accountsService.Stop()
 
-	transfersService := di.MustGet("transfersService").(*services.TransfersService)
+	transfersService := di.MustGet("transactionsService").(interfaces.TransactionService)
 	_ = transfersService.Stop()
 }

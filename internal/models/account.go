@@ -1,6 +1,9 @@
 package models
 
-import "centurypay/internal/enums"
+import (
+	"centurypay/internal/enums"
+	gonanoid "github.com/matoous/go-nanoid/v2"
+)
 
 type Account struct {
 	ID      string         `json:"id"`
@@ -13,13 +16,22 @@ type AccountBalance struct {
 	Currency enums.Currency `json:"currency"`
 }
 
-func NewAccount(id string, name string, balanceAmount float64, balanceCurrency enums.Currency) *Account {
+func NewAccount(
+	name string,
+	balanceAmount float64,
+	balanceCurrency enums.Currency,
+) *Account {
 	return &Account{
-		ID:   id,
+		ID:   generateAccountId(),
 		Name: name,
 		Balance: AccountBalance{
 			Amount:   balanceAmount,
 			Currency: balanceCurrency,
 		},
 	}
+}
+
+func generateAccountId() string {
+	id := gonanoid.Must(32)
+	return "acc-" + id
 }

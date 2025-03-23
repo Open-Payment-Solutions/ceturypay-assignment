@@ -1,6 +1,7 @@
 package starters
 
 import (
+	"centurypay/internal/processors"
 	"context"
 
 	"centurypay/internal/di"
@@ -8,6 +9,13 @@ import (
 )
 
 func RegisterServices(_ctx context.Context, di di.Container) {
-	di.MustSet("accountsService", services.NewAccountsService())
-	di.MustSet("transactionsService", services.NewTransactionsService())
+	accountsService := services.NewAccountsService()
+	transactionsService := services.NewTransactionsService(accountsService)
+	transactionsProcessor := processors.NewTransactionsProcessor(transactionsService, accountsService)
+
+	di.MustSet("accountsService", accountsService)
+	di.MustSet("transactionsService", transactionsService)
+	di.MustSet("transactionsProcessor", transactionsProcessor)
+
+	SeedData(accountsService)
 }

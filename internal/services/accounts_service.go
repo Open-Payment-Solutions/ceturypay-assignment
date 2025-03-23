@@ -1,72 +1,85 @@
 package services
 
 import (
-	"centurypay/internal/enums"
-	"centurypay/internal/models"
-	gonanoid "github.com/matoous/go-nanoid/v2"
+	"errors"
+	"fmt"
 	"sync"
+
+	"centurypay/internal/enums"
+	"centurypay/internal/helpers"
+	"centurypay/internal/models"
+)
+
+var (
+	ErrAccountNotFound = errors.New("account not found")
 )
 
 type AccountsService struct {
+	mu       sync.RWMutex
 	accounts map[string]*models.Account
-	mu       sync.Mutex
 }
 
 func NewAccountsService() *AccountsService {
-	service := &AccountsService{
+	return &AccountsService{
+		mu:       sync.RWMutex{},
 		accounts: make(map[string]*models.Account),
 	}
-
-	mark := models.NewAccount("acc-"+gonanoid.Must(32), "Mark", 100.0, enums.USD)
-	service.accounts[mark.ID] = mark
-
-	jane := models.NewAccount("acc-"+gonanoid.Must(32), "Jane", 50.0, enums.USD)
-	service.accounts[jane.ID] = jane
-
-	adam := models.NewAccount("acc-"+gonanoid.Must(32), "Adam", 0.0, enums.USD)
-	service.accounts[adam.ID] = adam
-
-	return service
 }
 
-func (s *AccountsService) GetAccount(id string) *models.Account {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *AccountsService) GetAccount(
+	id string,
+) (*models.Account, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	account, exists := s.accounts[id]
 	if !exists {
-		return nil
+		return nil, ErrAccountNotFound
 	}
 
-	return account
+	return helpers.CloneAccount(account), nil
 }
 
 func (s *AccountsService) GetAccounts() []*models.Account {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	accounts := make([]*models.Account, 0, len(s.accounts))
 	for _, account := range s.accounts {
-		accounts = append(accounts, account)
+		accounts = append(
+			accounts,
+			helpers.CloneAccount(account),
+		)
 	}
 
 	return accounts
 }
 
-func (s *AccountsService) CreateAccount(account *models.Account) *models.Account {
+func (s *AccountsService) CreateAccount(
+	name string,
+	balanceAmount float64,
+	balanceCurrency enums.Currency,
+) (*models.Account, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	fmt.Sprintf("Creating account with name: %s, balance: %f %s", name, balanceAmount, balanceCurrency)
+	account := models.NewAccount(name, balanceAmount, balanceCurrency)
 	s.accounts[account.ID] = account
-	return account
+
+	return helpers.CloneAccount(account), nil
 }
 
-func (s *AccountsService) UpdateAccount(account *models.Account) *models.Account {
+func (s *AccountsService) UpdateAccount(account *models.Account) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.accounts[account.ID] = account
-	return account
+	if _, exists := s.accounts[account.ID]; !exists {
+		return ErrAccountNotFound
+	}
+
+	s.accounts[account.ID] = helpers.CloneAccount(account)
+
+	return nil
 }
 
 func (s *AccountsService) Stop() error {

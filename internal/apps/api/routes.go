@@ -27,7 +27,21 @@ func RegisterRoutes(ctx context.Context, di di.Container, engine *echo.Echo) {
 	})
 
 	engine.GET("/accounts/:id", func(c echo.Context) error {
-		account := accountsService.GetAccount(c.Param("id"))
+		account, err := accountsService.GetAccount(c.Param("id"))
+		if err != nil {
+			status := http.StatusBadRequest
+			if err.Error() == services.ErrAccountNotFound.Error() {
+				status = http.StatusNotFound
+			}
+
+			return c.JSONPretty(
+				status,
+				map[string]interface{}{
+					"message": err.Error(),
+				},
+				"  ",
+			)
+		}
 
 		return c.JSONPretty(
 			http.StatusOK,
