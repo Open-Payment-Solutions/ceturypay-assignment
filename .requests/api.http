@@ -18,5 +18,5 @@ Content-Type: application/json
 }
 
 ### GET transaction
-GET http://127.0.0.1:8000/transactions/tx-gt-i50Wt1HlLzsTyImsjzLf-AVr3ywKS
+GET http://127.0.0.1:8000/transactions/tx-F10-krMXtCHX8FqAB0EYNKhJMhVtingU
 Accept: application/json

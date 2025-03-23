@@ -23,19 +23,19 @@ func (p *TransactionsProcessor) SubmitTransaction(transaction *models.Transactio
 		return err
 	}
 
-	time.Sleep(200 * time.Millisecond)
+	go func() {
+		time.Sleep(500 * time.Millisecond)
 
-	confirmed, err := p.transactionService.ConfirmTransaction(transaction.ID)
-	if err != nil {
-		return err
-	}
+		confirmed, err := p.transactionService.ConfirmTransaction(transaction.ID)
+		if err != nil {
+			return
+		}
 
-	time.Sleep(200 * time.Millisecond)
-
-	_, err = p.transactionService.CompleteTransaction(confirmed.ID)
-	if err != nil {
-		return err
-	}
+		_, err = p.transactionService.CompleteTransaction(confirmed.ID)
+		if err != nil {
+			return
+		}
+	}()
 
 	return nil
 }

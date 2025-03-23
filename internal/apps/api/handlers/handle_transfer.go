@@ -60,7 +60,6 @@ func HandleTransfer(c echo.Context, accountsService interfaces.AccountsService, 
 		)
 	}
 
-	// Create transaction
 	transaction, err := transactionsService.CreateTransaction(
 		fromAccount,
 		toAccount,

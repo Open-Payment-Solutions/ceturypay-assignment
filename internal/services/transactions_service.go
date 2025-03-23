@@ -91,7 +91,7 @@ func (s *TransactionsService) CreateTransaction(
 		return nil, err
 	}
 
-	return s.GetTransaction(tx.ID)
+	return tx, nil
 }
 
 func (s *TransactionsService) GetTransaction(
@@ -181,6 +181,7 @@ func (s *TransactionsService) CompleteTransaction(
 
 	originalStatus := transaction.Status
 	transaction.Status = enums.TransactionStatusCompleted
+	transaction.CompletedAt = time.Now()
 
 	toAccount := transaction.To
 	toAccount.Balance.Amount += transaction.Amount
@@ -211,6 +212,7 @@ func (s *TransactionsService) RejectTransaction(
 
 	originalStatus := transaction.Status
 	transaction.Status = enums.TransactionStatusRejected
+	transaction.RejectedAt = time.Now()
 
 	fromAccount := transaction.From
 	fromAccount.Balance.Amount += transaction.Amount
