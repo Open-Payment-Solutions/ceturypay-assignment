@@ -20,15 +20,14 @@ type Transaction struct {
 
 func NewTransaction(from *Account, to *Account, amount float64, currency enums.Currency) *Transaction {
 	return &Transaction{
-		ID:        generateTransactionId(), // You'll need to implement this function
-		From:      from,
-		To:        to,
-		Amount:    amount,
-		Currency:  currency,
-		Status:    enums.TransactionStatusCreated,
-		CreatedAt: time.Now(),
-		// Lock the funds for 1 minute
-		LockedUntil: time.Now().Add(time.Minute),
+		ID:          generateTransactionId(),
+		From:        from,
+		To:          to,
+		Amount:      amount,
+		Currency:    currency,
+		Status:      enums.TransactionStatusCreated,
+		CreatedAt:   time.Now(),
+		LockedUntil: time.Now().Add(time.Minute), // amount will be locked for 1 minute
 	}
 }
 
