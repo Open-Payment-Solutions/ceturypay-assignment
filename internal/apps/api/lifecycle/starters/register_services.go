@@ -9,5 +9,5 @@ import (
 
 func RegisterServices(_ctx context.Context, di di.Container) {
 	di.MustSet("accountsService", services.NewAccountsService())
-	di.MustSet("transfersService", services.NewTransferService())
+	di.MustSet("transactionsService", services.NewTransactionsService())
 }
