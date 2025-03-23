@@ -1,6 +1,8 @@
 package api
 
 import (
+	"centurypay/internal/apps/api/handlers"
+	"centurypay/internal/interfaces"
 	"centurypay/internal/services"
 	"context"
 	"net/http"
@@ -11,8 +13,8 @@ import (
 )
 
 func RegisterRoutes(ctx context.Context, di di.Container, engine *echo.Echo) {
-	accountsService := di.MustGet("accountsService").(*services.AccountsService)
-	//transfersService := di.MustGet("transfersService").(*services.TransfersService)
+	accountsService := di.MustGet("accountsService").(interfaces.AccountsService)
+	transactionsService := di.MustGet("transactionsService").(interfaces.TransactionsService)
 
 	engine.GET("/accounts", func(c echo.Context) error {
 		accounts := accountsService.GetAccounts()
@@ -51,45 +53,30 @@ func RegisterRoutes(ctx context.Context, di di.Container, engine *echo.Echo) {
 	})
 
 	engine.POST("/transfers", func(c echo.Context) error {
-		//transfer := transfersService.CreateTransfer()
-
-		// ToDO: Implement transfer creation
-		return c.JSONPretty(
-			http.StatusOK,
-			map[string]interface{}{},
-			"  ",
-		)
+		return handlers.HandleTransfer(c, accountsService, transactionsService)
 	})
 
-	engine.DELETE("/transfers/:id", func(c echo.Context) error {
-		//transfer := transfersService.GetTransfer(c.Param("id"))
+	// Add endpoint to get transaction status
+	engine.GET("/transactions/:id", func(c echo.Context) error {
+		transaction, err := transactionsService.GetTransaction(c.Param("id"))
+		if err != nil {
+			status := http.StatusBadRequest
+			if err.Error() == services.ErrTransactionNotFound.Error() {
+				status = http.StatusNotFound
+			}
 
-		// ToDO: Implement transfer deletion
+			return c.JSONPretty(
+				status,
+				map[string]interface{}{
+					"message": err.Error(),
+				},
+				"  ",
+			)
+		}
+
 		return c.JSONPretty(
 			http.StatusOK,
-			map[string]interface{}{},
-			"  ",
-		)
-	})
-
-	engine.GET("/transfers/:id", func(c echo.Context) error {
-		//err := transfersService.DeleteTransfer(c.Param("id")) // delete only unconfirmed transfer
-
-		// ToDO: Implement transfer retrieval
-		return c.JSONPretty(
-			http.StatusOK,
-			map[string]interface{}{},
-			"  ",
-		)
-	})
-
-	engine.POST("/transfers/:id/confirm", func(c echo.Context) error {
-		//transfer, err := transfersService.ConfirmTransfer(c.Param("id"))
-
-		// ToDO: Implement transfer confirmation
-		return c.JSONPretty(
-			http.StatusOK,
-			map[string]interface{}{},
+			transaction,
 			"  ",
 		)
 	})

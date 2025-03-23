@@ -62,8 +62,9 @@ func (s *AccountsService) CreateAccount(
 ) (*models.Account, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	fmt.Sprintf("Creating account with name: %s, balance: %f %s", name, balanceAmount, balanceCurrency)
+
 	account := models.NewAccount(name, balanceAmount, balanceCurrency)
+	account.ID = fmt.Sprintf("%d", len(s.accounts)+1) // uncomment this for api request testing
 	s.accounts[account.ID] = account
 
 	return helpers.CloneAccount(account), nil

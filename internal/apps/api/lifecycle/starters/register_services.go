@@ -11,7 +11,8 @@ import (
 func RegisterServices(_ctx context.Context, di di.Container) {
 	accountsService := services.NewAccountsService()
 	transactionsService := services.NewTransactionsService(accountsService)
-	transactionsProcessor := processors.NewTransactionsProcessor(transactionsService, accountsService)
+	transactionsProcessor := processors.NewTransactionsProcessor(transactionsService)
+	transactionsService.SetProcessor(transactionsProcessor)
 
 	di.MustSet("accountsService", accountsService)
 	di.MustSet("transactionsService", transactionsService)

@@ -1,0 +1,22 @@
+### GET accounts
+GET http://127.0.0.1:8000/accounts
+Accept: application/json
+
+### GET account
+GET http://127.0.0.1:8000/accounts/:IDHERE
+Accept: application/json
+
+### CREATE transfer
+POST http://127.0.0.1:8000/transfers
+Content-Type: application/json
+
+{
+  "fromAccountId": "1",
+  "toAccountId": "2",
+  "amount": 10,
+  "currency": "USD"
+}
+
+### GET transaction
+GET http://127.0.0.1:8000/transactions/tx-gt-i50Wt1HlLzsTyImsjzLf-AVr3ywKS
+Accept: application/json

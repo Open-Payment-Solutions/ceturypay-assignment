@@ -14,6 +14,6 @@ func StopServices(_ctx context.Context, di di.Container) {
 	accountsService := di.MustGet("accountsService").(interfaces.AccountsService)
 	_ = accountsService.Stop()
 
-	transfersService := di.MustGet("transactionsService").(interfaces.TransactionService)
+	transfersService := di.MustGet("transactionsService").(interfaces.TransactionsService)
 	_ = transfersService.Stop()
 }

@@ -62,7 +62,6 @@ func (s *TransactionsService) CreateTransaction(
 	}
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	if fromAccount.Balance.Currency != currency ||
 		toAccount.Balance.Currency != currency {
@@ -84,14 +83,15 @@ func (s *TransactionsService) CreateTransaction(
 	)
 	s.transactions[transaction.ID] = transaction
 
-	err = s.processor.SubmitTransaction(
-		helpers.CloneTransaction(transaction),
-	)
+	s.mu.Unlock()
+
+	tx := helpers.CloneTransaction(transaction)
+	err = s.processor.SubmitTransaction(tx)
 	if err != nil {
 		return nil, err
 	}
 
-	return helpers.CloneTransaction(transaction), nil
+	return s.GetTransaction(tx.ID)
 }
 
 func (s *TransactionsService) GetTransaction(

@@ -1,40 +1,51 @@
 package processors
 
 import (
+	"time"
+
 	"centurypay/internal/interfaces"
 	"centurypay/internal/models"
-	"sync"
 )
 
-type TransactionProcessor struct {
-	transactionService interfaces.TransactionService
-	accountService     interfaces.AccountsService
-
-	queue chan *models.Transaction
-	wg    sync.WaitGroup
+type TransactionsProcessor struct {
+	transactionService interfaces.TransactionsService
 }
 
-func NewTransactionsProcessor(
-	transactionService interfaces.TransactionService,
-	accountService interfaces.AccountsService,
-) *TransactionProcessor {
-	return &TransactionProcessor{
+func NewTransactionsProcessor(transactionService interfaces.TransactionsService) *TransactionsProcessor {
+	return &TransactionsProcessor{
 		transactionService: transactionService,
-		accountService:     accountService,
-
-		queue: make(chan *models.Transaction, 100),
-		wg:    sync.WaitGroup{},
 	}
 }
 
-func (p *TransactionProcessor) Start() error {
+func (p *TransactionsProcessor) SubmitTransaction(transaction *models.Transaction) error {
+	_, err := p.transactionService.SetPendingTransaction(transaction.ID)
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(200 * time.Millisecond)
+
+	confirmed, err := p.transactionService.ConfirmTransaction(transaction.ID)
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(200 * time.Millisecond)
+
+	_, err = p.transactionService.CompleteTransaction(confirmed.ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (p *TransactionProcessor) SubmitTransaction(transaction *models.Transaction) error {
+func (p *TransactionsProcessor) Start() error {
+	// Could initialize background workers or connections here
 	return nil
 }
 
-func (p *TransactionProcessor) Stop() error {
+func (p *TransactionsProcessor) Stop() error {
+	// Cleanup resources
 	return nil
 }
